@@ -25,7 +25,7 @@ except ImportError:
 LED_COUNT		= 50			# Number of LED pixels.
 LED_PIN			= board.D18		# GPIO pin connected to the pixels (18 is PCM).
 LED_BRIGHTNESS		= 0.5			# Float from 0.0 (min) to 1.0 (max)
-LED_ORDER		= neopixel.GRB		# Strip type and colour ordering
+LED_ORDER		= neopixel.RGB		# Strip type and colour ordering
 
 COLOR_VFR		= (255,0,0)		# Green
 COLOR_VFR_FADE		= (125,0,0)		# Green Fade for wind
