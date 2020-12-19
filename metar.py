@@ -6,6 +6,7 @@ import time
 import datetime
 import os
 import random
+import copy
 
 # metar.py script iteration 1.4.1
 
@@ -61,20 +62,21 @@ LOCATION 		= "Boston"		# Nearby city for Sunset/Sunrise timing, refer to https:/
 
 
 def suppress_some_leds(leds):
+    leds_after_suppress = copy.deepcopy(leds)
     indices = [random.randrange(0, 47) for i in range(10)]
     print(str(indices))
     i = 0
-    for led in leds:
+    for led in leds_after_suppress:
         if i not in indices:
-            leds[i] = (0,0,0)
+            leds_after_suppress[i] = (0,0,0)
         i += 1
-    return leds
+    return leds_after_suppress
 
 def clear(pixels):
+    pixels_copy = copy.deepcopy(pixels)
     for i in range(50):
-        pixels[i] = (0,0,0)
-    pixels.show()
-    return pixels
+        pixels_copy[i] = (0,0,0)
+    pixels_copy.show()
 
 def run():
     # Initialize the LED strip
@@ -199,13 +201,14 @@ def run():
         loopy = 0
         while loopy < 100:
             clear(pixels)
-            pixels = suppress_some_leds(pixels)
-            print(str(pixels))
-            pixels.show()
+            pixels_suppressed = suppress_some_leds(pixels)
+            print("main pixels " + str(pixels))
+            print("pixels after suppression " + str(pixels_suppressed))
+            pixels_suppressed.show()
             time.sleep(4)
             loopy += 1
 
-        pixels = clear(pixels)
+        clear(pixels)
         # Switching between animation cycles
         time.sleep(BLINK_SPEED)
         windCycle = False if windCycle else True
