@@ -74,6 +74,7 @@ def clear(pixels):
     for i in range(50):
         pixels[i] = (0,0,0)
     pixels.show()
+    return pixels
 
 def run():
     # Initialize the LED strip
