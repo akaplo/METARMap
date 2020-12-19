@@ -14,7 +14,7 @@ pixels[0] = color
 for multiplier in [1, 2, 3, 4, 5]:
     for idx in [0, 1, 2, 3,4,5,6,7,8]:
         p = 10 * multiplier - 10 + idx
-        if multiplier is not 1 and idx is not 0:
+        if (multiplier + idx != 1):
             print("turning on " + str(p))
             pixels[p] = color
             time.sleep(1)
