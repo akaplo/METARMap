@@ -1,6 +1,6 @@
-import time
+# import time
 import metar
 
-while(True):
-    metar.run()
-    time.sleep(4)
+# while(True):
+metar.run()
+#     time.sleep(4)

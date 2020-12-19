@@ -164,8 +164,6 @@ def run():
 
     windCycle = False
     numAirports = len(stationList)
-    pixels = clear(pixels)
-    time.sleep(2)
     while looplimit > 0:
         i = 0
         for airportcode in airports:
@@ -198,10 +196,16 @@ def run():
             i += 1
 
         # Update actual LEDs all at once
-        pixels = suppress_some_leds(pixels)
-        print(str(pixels))
-        pixels.show()
+        loopy = 0
+        while loopy < 100:
+            pixels = clear(pixels)
+            pixels = suppress_some_leds(pixels)
+            print(str(pixels))
+            pixels.show()
+            time.sleep(4)
+            loopy += 1
 
+        pixels = clear(pixels)
         # Switching between animation cycles
         time.sleep(BLINK_SPEED)
         windCycle = False if windCycle else True
