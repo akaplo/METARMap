@@ -165,6 +165,7 @@ def run():
     windCycle = False
     numAirports = len(stationList)
     pixels = clear(pixels)
+    time.sleep(2)
     while looplimit > 0:
         i = 0
         for airportcode in airports:

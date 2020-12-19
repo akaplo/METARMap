@@ -3,4 +3,4 @@ import metar
 
 while(True):
     metar.run()
-    time.sleep(5)
+    time.sleep(4)
