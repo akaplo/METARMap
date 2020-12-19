@@ -215,7 +215,7 @@ def run():
     displayTime = 0.0
     displayAirportCounter = 0
     numAirports = len(stationList)
-    clear()
+    pixels = clear(pixels)
     while looplimit > 0:
         i = 0
         for airportcode in airports:
