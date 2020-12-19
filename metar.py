@@ -74,6 +74,16 @@ DISPLAY_ROTATION_SPEED = 5.0			# Float in seconds, e.g 2.0 for two seconds
 
 print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
 
+def suppress_some_leds(leds):
+    indices = [random.randrange(0, 50) for i in range(10)]
+    print(str(indices))
+    i = 0
+    for led in leds:
+        if i not in indices:
+            leds[i] = (0,0,0)
+        i += 1
+    return leds
+
 # Figure out sunrise/sunset times if astral is being used
 if astral is not None and USE_SUNRISE_SUNSET:
 	try:
@@ -232,7 +242,7 @@ while looplimit > 0:
 
 	# Update actual LEDs all at once
 	pixels = suppress_some_leds(pixels)
-    print(str(pixels))
+	print(str(pixels))
 	#pixels.show()
 	
 	# Rotate through airports METAR on external display
@@ -252,13 +262,3 @@ while looplimit > 0:
 
 print()
 print("Done")
-
-func suppress_some_leds(leds):
-    indices = [random.randrange(0, 50) for i in range(10)]
-    print(str(indices))
-    i = 0
-    for led of leds:
-        if i not in indices:
-            leds[i] = (0,0,0)
-        i += 1
-    return leds
