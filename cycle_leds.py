@@ -20,7 +20,9 @@ for multiplier in [1, 2, 3, 4, 5]:
             time.sleep(1)
     # now turn them all off
     for idxi in [0, 1, 2, 3,4,5,6,7,8]:
-        if multiplier is not 1 and idx is not 0:
+        if (multiplier + idxi != 1):
             color = (0,0,0)
-            pixels[10 * multiplier - 10 + idxi] = color
+            p = 10 * multiplier - 10 + idxi
+            print("turning off " + str(p)
+            pixels[p] = color
 pixels.deinit()
