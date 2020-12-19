@@ -72,7 +72,6 @@ DISPLAY_ROTATION_SPEED = 5.0			# Float in seconds, e.g 2.0 for two seconds
 # ------------END OF CONFIGURATION-------------------------------------------
 # ---------------------------------------------------------------------------
 
-print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
 
 def suppress_some_leds(leds):
     indices = [random.randrange(0, 47) for i in range(10)]
@@ -89,52 +88,53 @@ def clear(pixels):
         pixels[i] = (0,0,0)
     pixels.show()
 
-# Figure out sunrise/sunset times if astral is being used
-if astral is not None and USE_SUNRISE_SUNSET:
-	try:
-		# For older clients running python 3.5 which are using Astral 1.10.1
-		ast = astral.Astral()
-		try:
-			city = ast[LOCATION]
-		except KeyError:
-			print("Error: Location not recognized, please check list of supported cities and reconfigure")
-		else:
-			print(city)
-			sun = city.sun(date = datetime.datetime.now().date(), local = True)
-			BRIGHT_TIME_START = sun['sunrise'].time()
-			DIM_TIME_START = sun['sunset'].time()
-	except AttributeError:
-		# newer Raspberry Pi versions using Python 3.6+ using Astral 2.2
-		import astral.geocoder
-		import astral.sun
-		try:
-			city = astral.geocoder.lookup(LOCATION, astral.geocoder.database())
-		except KeyError:
-			print("Error: Location not recognized, please check list of supported cities and reconfigure")
-		else:
-			print(city)
-			sun = astral.sun.sun(city.observer, date = datetime.datetime.now().date(), tzinfo=city.timezone)
-			BRIGHT_TIME_START = sun['sunrise'].time()
-			DIM_TIME_START = sun['sunset'].time()
-	print("Sunrise:" + BRIGHT_TIME_START.strftime('%H:%M') + " Sunset:" + DIM_TIME_START.strftime('%H:%M'))
-
-# Initialize the LED strip
-script_dir = os.path.dirname(__file__)
-airports_rel_path = 'airports'
-airports_abs_path = os.path.join(script_dir, airports_rel_path)
-bright = BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
-print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
-print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
-print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
-print("External Display:" + str(ACTIVATE_EXTERNAL_METAR_DISPLAY))
-pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if (ACTIVATE_DAYTIME_DIMMING and bright == False) else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
-
-# Read the airports file to retrieve list of airports and use as order for LEDs
-with open(airports_abs_path) as f:
-	airports = f.readlines()
-airports = [x.strip() for x in airports]
-
 def run():
+    # Figure out sunrise/sunset times if astral is being used
+    if astral is not None and USE_SUNRISE_SUNSET:
+        try:
+            # For older clients running python 3.5 which are using Astral 1.10.1
+            ast = astral.Astral()
+            try:
+                city = ast[LOCATION]
+            except KeyError:
+                print("Error: Location not recognized, please check list of supported cities and reconfigure")
+            else:
+                print(city)
+                sun = city.sun(date = datetime.datetime.now().date(), local = True)
+                BRIGHT_TIME_START = sun['sunrise'].time()
+                DIM_TIME_START = sun['sunset'].time()
+        except AttributeError:
+            # newer Raspberry Pi versions using Python 3.6+ using Astral 2.2
+            import astral.geocoder
+            import astral.sun
+            try:
+                city = astral.geocoder.lookup(LOCATION, astral.geocoder.database())
+            except KeyError:
+                print("Error: Location not recognized, please check list of supported cities and reconfigure")
+            else:
+                print(city)
+                sun = astral.sun.sun(city.observer, date = datetime.datetime.now().date(), tzinfo=city.timezone)
+                BRIGHT_TIME_START = sun['sunrise'].time()
+                DIM_TIME_START = sun['sunset'].time()
+        print("Sunrise:" + BRIGHT_TIME_START.strftime('%H:%M') + " Sunset:" + DIM_TIME_START.strftime('%H:%M'))
+
+    # Initialize the LED strip
+    print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
+    script_dir = os.path.dirname(__file__)
+    airports_rel_path = 'airports'
+    airports_abs_path = os.path.join(script_dir, airports_rel_path)
+    bright = BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
+    print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
+    print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
+    print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
+    print("External Display:" + str(ACTIVATE_EXTERNAL_METAR_DISPLAY))
+    pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if (ACTIVATE_DAYTIME_DIMMING and bright == False) else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
+
+    # Read the airports file to retrieve list of airports and use as order for LEDs
+    with open(airports_abs_path) as f:
+        airports = f.readlines()
+    airports = [x.strip() for x in airports]
+
     # Retrieve METAR from aviationweather.gov data server
     # Details about parameters can be found here: https://www.aviationweather.gov/dataserver/example?datatype=metar
     url = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=5&mostRecentForEachStation=true&stationString=" + ",".join([item for item in airports if item != "NULL"])
