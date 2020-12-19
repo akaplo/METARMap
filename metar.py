@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import urllib.request
 import xml.etree.ElementTree as ET
 import board
