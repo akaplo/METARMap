@@ -205,7 +205,7 @@ def run():
             print("main pixels " + str(pixels))
             print("pixels after suppression " + str(pixels_suppressed))
             pixels_suppressed.show()
-            time.sleep(4)
+            time.sleep(2)
             loopy += 1
 
         clear(pixels)
