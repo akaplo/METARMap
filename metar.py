@@ -75,7 +75,7 @@ DISPLAY_ROTATION_SPEED = 5.0			# Float in seconds, e.g 2.0 for two seconds
 print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
 
 def suppress_some_leds(leds):
-    indices = [random.randrange(0, 50) for i in range(10)]
+    indices = [random.randrange(0, 47) for i in range(10)]
     print(str(indices))
     i = 0
     for led in leds:
