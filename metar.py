@@ -6,6 +6,7 @@ import board
 import neopixel
 import time
 import datetime
+import os
 try:
 	import astral
 except ImportError:
@@ -61,7 +62,7 @@ DIM_TIME_START		= datetime.time(19,0)	# Time of day to run at LED_BRIGHTNESS_DIM
 LED_BRIGHTNESS_DIM	= 0.1			# Float from 0.0 (min) to 1.0 (max)
 
 USE_SUNRISE_SUNSET 	= True			# Set to True if instead of fixed times for bright/dimming, you want to use local sunrise/sunset
-LOCATION 		= "Seattle"		# Nearby city for Sunset/Sunrise timing, refer to https://astral.readthedocs.io/en/latest/#cities for list of cities supported
+LOCATION 		= "Boston"		# Nearby city for Sunset/Sunrise timing, refer to https://astral.readthedocs.io/en/latest/#cities for list of cities supported
 
 # ----- External Display support -----
 ACTIVATE_EXTERNAL_METAR_DISPLAY = False		# Set to True if you want to display METAR conditions to a small external display
@@ -103,6 +104,9 @@ if astral is not None and USE_SUNRISE_SUNSET:
 	print("Sunrise:" + BRIGHT_TIME_START.strftime('%H:%M') + " Sunset:" + DIM_TIME_START.strftime('%H:%M'))
 
 # Initialize the LED strip
+script_dir = os.path.dirname(__file__)
+airports_rel_path = 'airports'
+airports_abs_path = os.path.join(script_dir, airports_rel_path)
 bright = BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
 print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
 print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
@@ -111,7 +115,7 @@ print("External Display:" + str(ACTIVATE_EXTERNAL_METAR_DISPLAY))
 pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if (ACTIVATE_DAYTIME_DIMMING and bright == False) else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
 
 # Read the airports file to retrieve list of airports and use as order for LEDs
-with open("/home/pi/airports") as f:
+with open(airports_abs_path) as f:
 	airports = f.readlines()
 airports = [x.strip() for x in airports]
 
