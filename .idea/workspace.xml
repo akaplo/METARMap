@@ -22,6 +22,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.language" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -33,7 +34,7 @@
       <option name="presentableId" value="Default" />
       <updated>1608345070393</updated>
       <workItem from="1608345071541" duration="1933000" />
-      <workItem from="1608397536771" duration="3521000" />
+      <workItem from="1608397536771" duration="3863000" />
     </task>
     <servers />
   </component>
@@ -41,6 +42,10 @@
     <option name="version" value="3" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="788" y="349" key="SettingsEditor" timestamp="1608402446630">
+      <screen x="0" y="23" width="2560" height="1374" />
+    </state>
+    <state x="788" y="349" key="SettingsEditor/0.23.2560.1374@0.23.2560.1374" timestamp="1608402446630" />
     <state x="943" y="335" width="672" height="678" key="search.everywhere.popup" timestamp="1608345600164">
       <screen x="0" y="23" width="2560" height="1374" />
     </state>

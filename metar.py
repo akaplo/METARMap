@@ -6,14 +6,6 @@ import time
 import datetime
 import os
 import random
-try:
-	import astral
-except ImportError:
-	astral = None
-try:
-	import displaymetar
-except ImportError:
-	displaymetar = None
 
 # metar.py script iteration 1.4.1
 
@@ -63,10 +55,6 @@ LED_BRIGHTNESS_DIM	= 0.1			# Float from 0.0 (min) to 1.0 (max)
 USE_SUNRISE_SUNSET 	= True			# Set to True if instead of fixed times for bright/dimming, you want to use local sunrise/sunset
 LOCATION 		= "Boston"		# Nearby city for Sunset/Sunrise timing, refer to https://astral.readthedocs.io/en/latest/#cities for list of cities supported
 
-# ----- External Display support -----
-ACTIVATE_EXTERNAL_METAR_DISPLAY = False		# Set to True if you want to display METAR conditions to a small external display
-DISPLAY_ROTATION_SPEED = 5.0			# Float in seconds, e.g 2.0 for two seconds
-
 # ---------------------------------------------------------------------------
 # ------------END OF CONFIGURATION-------------------------------------------
 # ---------------------------------------------------------------------------
@@ -88,35 +76,6 @@ def clear(pixels):
     pixels.show()
 
 def run():
-    # Figure out sunrise/sunset times if astral is being used
-    if astral is not None and USE_SUNRISE_SUNSET:
-        try:
-            # For older clients running python 3.5 which are using Astral 1.10.1
-            ast = astral.Astral()
-            try:
-                city = ast[LOCATION]
-            except KeyError:
-                print("Error: Location not recognized, please check list of supported cities and reconfigure")
-            else:
-                print(city)
-                sun = city.sun(date = datetime.datetime.now().date(), local = True)
-                BRIGHT_TIME_START = sun['sunrise'].time()
-                DIM_TIME_START = sun['sunset'].time()
-        except AttributeError:
-            # newer Raspberry Pi versions using Python 3.6+ using Astral 2.2
-            import astral.geocoder
-            import astral.sun
-            try:
-                city = astral.geocoder.lookup(LOCATION, astral.geocoder.database())
-            except KeyError:
-                print("Error: Location not recognized, please check list of supported cities and reconfigure")
-            else:
-                print(city)
-                sun = astral.sun.sun(city.observer, date = datetime.datetime.now().date(), tzinfo=city.timezone)
-                BRIGHT_TIME_START = sun['sunrise'].time()
-                DIM_TIME_START = sun['sunset'].time()
-        print("Sunrise:" + BRIGHT_TIME_START.strftime('%H:%M') + " Sunset:" + DIM_TIME_START.strftime('%H:%M'))
-
     # Initialize the LED strip
     print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
     script_dir = os.path.dirname(__file__)
@@ -126,7 +85,6 @@ def run():
     print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
     print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
     print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
-    print("External Display:" + str(ACTIVATE_EXTERNAL_METAR_DISPLAY))
     pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if (ACTIVATE_DAYTIME_DIMMING and bright == False) else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
 
     # Read the airports file to retrieve list of airports and use as order for LEDs
@@ -200,19 +158,10 @@ def run():
         conditionDict[stationId] = { "flightCategory" : flightCategory, "windDir": windDir, "windSpeed" : windSpeed, "windGustSpeed": windGustSpeed, "windGust": windGust, "vis": vis, "obs" : obs, "tempC" : tempC, "dewpointC" : dewpointC, "altimHg" : altimHg, "lightning": lightning, "skyConditions" : skyConditions, "obsTime": obsTime }
         stationList.append(stationId)
 
-    # Start up external display output
-    disp = None
-    if displaymetar is not None and ACTIVATE_EXTERNAL_METAR_DISPLAY:
-        print("setting up external display")
-        disp = displaymetar.startDisplay()
-        displaymetar.clearScreen(disp)
-
     # Setting LED colors based on weather conditions
-    looplimit = int(round(BLINK_TOTALTIME_SECONDS / BLINK_SPEED)) if (ACTIVATE_WINDCONDITION_ANIMATION or ACTIVATE_LIGHTNING_ANIMATION or ACTIVATE_EXTERNAL_METAR_DISPLAY) else 1
+    looplimit = int(round(BLINK_TOTALTIME_SECONDS / BLINK_SPEED)) if (ACTIVATE_WINDCONDITION_ANIMATION or ACTIVATE_LIGHTNING_ANIMATION) else 1
 
     windCycle = False
-    displayTime = 0.0
-    displayAirportCounter = 0
     numAirports = len(stationList)
     pixels = clear(pixels)
     while looplimit > 0:
@@ -250,16 +199,6 @@ def run():
         pixels = suppress_some_leds(pixels)
         print(str(pixels))
         pixels.show()
-
-        # Rotate through airports METAR on external display
-        if disp is not None:
-            if displayTime <= DISPLAY_ROTATION_SPEED:
-                displaymetar.outputMetar(disp, stationList[displayAirportCounter], conditionDict.get(stationList[displayAirportCounter], None))
-                displayTime += BLINK_SPEED
-            else:
-                displayTime = 0.0
-                displayAirportCounter = displayAirportCounter + 1 if displayAirportCounter < numAirports-1 else 0
-                print("showing METAR Display for " + stationList[displayAirportCounter])
 
         # Switching between animation cycles
         time.sleep(BLINK_SPEED)
