@@ -198,7 +198,7 @@ def run():
         # Update actual LEDs all at once
         loopy = 0
         while loopy < 100:
-            pixels = clear(pixels)
+            clear(pixels)
             pixels = suppress_some_leds(pixels)
             print(str(pixels))
             pixels.show()
