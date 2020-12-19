@@ -10,7 +10,7 @@ pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT)
 
 color_red = (255,0,0)
 color_clear = (0,0,0)
-pixels[0] = color
+pixels[0] = color_red
 # turn them all on in groups of 10
 for multiplier in [1, 2, 3, 4, 5]:
     for idx in [0, 1, 2, 3,4,5,6,7,8]:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import urllib.request
 import xml.etree.ElementTree as ET
 import board
@@ -7,6 +6,7 @@ import neopixel
 import time
 import datetime
 import os
+import random
 try:
 	import astral
 except ImportError:
@@ -231,7 +231,9 @@ while looplimit > 0:
 		i += 1
 
 	# Update actual LEDs all at once
-	pixels.show()
+	pixels = suppress_some_leds(pixels)
+    print(str(pixels))
+	#pixels.show()
 	
 	# Rotate through airports METAR on external display
 	if disp is not None:
@@ -250,3 +252,13 @@ while looplimit > 0:
 
 print()
 print("Done")
+
+func suppress_some_leds(leds):
+    indices = [random.randrange(0, 50) for i in range(10)]
+    print(str(indices))
+    i = 0
+    for led of leds:
+        if i not in indices:
+            leds[i] = (0,0,0)
+        i += 1
+    return leds
