@@ -63,7 +63,7 @@ LOCATION 		= "Boston"		# Nearby city for Sunset/Sunrise timing, refer to https:/
 
 def suppress_some_leds(leds):
     leds_after_suppress = copy.deepcopy(leds)
-    indices = [random.randrange(0, 47) for i in range(10)]
+    indices = [random.randrange(0, 49) for i in range(10)]
     print(str(indices))
     i = 0
     for led in leds_after_suppress:
@@ -84,11 +84,11 @@ def run():
     script_dir = os.path.dirname(__file__)
     airports_rel_path = 'airports'
     airports_abs_path = os.path.join(script_dir, airports_rel_path)
-    bright = BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
+    bright = False #BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
     print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
     print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
     print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
-    pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if (ACTIVATE_DAYTIME_DIMMING and bright == False) else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
+    pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if bright == False else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
 
     # Read the airports file to retrieve list of airports and use as order for LEDs
     with open(airports_abs_path) as f:
@@ -205,7 +205,7 @@ def run():
             print("main pixels " + str(pixels))
             print("pixels after suppression " + str(pixels_suppressed))
             pixels_suppressed.show()
-            time.sleep(2)
+            time.sleep(1)
             loopy += 1
 
         clear(pixels)
