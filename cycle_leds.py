@@ -13,11 +13,14 @@ pixels[0] = color
 # turn them all on in groups of 10
 for multiplier in [1, 2, 3, 4, 5]:
     for idx in [0, 1, 2, 3,4,5,6,7,8]:
+        p = 10 * multiplier - 10 + idx
         if multiplier is not 1 and idx is not 0:
-            pixels[10 * multiplier - 10 + idx] = color
+            print("turning on " + p)
+            pixels[p] = color
             time.sleep(1)
     # now turn them all off
-    for idxi in [0, 1, 2, 3,4,5,6,7,8]::
+    for idxi in [0, 1, 2, 3,4,5,6,7,8]:
         if multiplier is not 1 and idx is not 0:
             color = (0,0,0)
             pixels[10 * multiplier - 10 + idxi] = color
+pixels.deinit()
