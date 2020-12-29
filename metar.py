@@ -78,146 +78,132 @@ def clear(pixels):
         pixels_copy[i] = (0,0,0)
     pixels_copy.show()
 
-def fade_to_value(pixels, fade_time):
-    
+# Initialize the LED strip
+print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
+script_dir = os.path.dirname(__file__)
+airports_rel_path = 'airports'
+airports_abs_path = os.path.join(script_dir, airports_rel_path)
+bright = False #BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
+print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
+print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
+print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
+pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if bright == False else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
 
+# Read the airports file to retrieve list of airports and use as order for LEDs
+with open(airports_abs_path) as f:
+    airports = f.readlines()
+airports = [x.strip() for x in airports]
 
-def run():
-    # Initialize the LED strip
-    print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
-    script_dir = os.path.dirname(__file__)
-    airports_rel_path = 'airports'
-    airports_abs_path = os.path.join(script_dir, airports_rel_path)
-    bright = False #BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_START
-    print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
-    print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
-    print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
-    pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if bright == False else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
+# Retrieve METAR from aviationweather.gov data server
+# Details about parameters can be found here: https://www.aviationweather.gov/dataserver/example?datatype=metar
+url = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=5&mostRecentForEachStation=true&stationString=" + ",".join([item for item in airports if item != "NULL"])
+print(url)
+req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 Edg/86.0.622.69'})
+content = urllib.request.urlopen(req).read()
 
-    # Read the airports file to retrieve list of airports and use as order for LEDs
-    with open(airports_abs_path) as f:
-        airports = f.readlines()
-    airports = [x.strip() for x in airports]
+# Retrieve flying conditions from the service response and store in a dictionary for each airport
+root = ET.fromstring(content)
+conditionDict = { "NULL": {"flightCategory" : "", "windDir": "", "windSpeed" : 0, "windGustSpeed" :  0, "windGust" : False, "lightning": False, "tempC" : 0, "dewpointC" : 0, "vis" : 0, "altimHg" : 0, "obs" : "", "skyConditions" : {}, "obsTime" : datetime.datetime.now() } }
+conditionDict.pop("NULL")
+stationList = []
+for metar in root.iter('METAR'):
+    stationId = metar.find('station_id').text
+    if metar.find('flight_category') is None:
+        print("Missing flight condition, skipping.")
+        continue
+    flightCategory = metar.find('flight_category').text
+    windDir = ""
+    windSpeed = 0
+    windGustSpeed = 0
+    windGust = False
+    lightning = False
+    tempC = 0
+    dewpointC = 0
+    vis = 0
+    altimHg = 0.0
+    obs = ""
+    skyConditions = []
+    if metar.find('wind_gust_kt') is not None:
+        windGustSpeed = int(metar.find('wind_gust_kt').text)
+        windGust = (True if (ALWAYS_BLINK_FOR_GUSTS or windGustSpeed > WIND_BLINK_THRESHOLD) else False)
+    if metar.find('wind_speed_kt') is not None:
+        windSpeed = int(metar.find('wind_speed_kt').text)
+    if metar.find('wind_dir_degrees') is not None:
+        windDir = metar.find('wind_dir_degrees').text
+    if metar.find('temp_c') is not None:
+        tempC = int(round(float(metar.find('temp_c').text)))
+    if metar.find('dewpoint_c') is not None:
+        dewpointC = int(round(float(metar.find('dewpoint_c').text)))
+    if metar.find('visibility_statute_mi') is not None:
+        vis = int(round(float(metar.find('visibility_statute_mi').text)))
+    if metar.find('altim_in_hg') is not None:
+        altimHg = float(round(float(metar.find('altim_in_hg').text), 2))
+    if metar.find('wx_string') is not None:
+        obs = metar.find('wx_string').text
+    if metar.find('observation_time') is not None:
+        obsTime = datetime.datetime.fromisoformat(metar.find('observation_time').text.replace("Z","+00:00"))
+    for skyIter in metar.iter("sky_condition"):
+        skyCond = { "cover" : skyIter.get("sky_cover"), "cloudBaseFt": int(skyIter.get("cloud_base_ft_agl", default=0)) }
+        skyConditions.append(skyCond)
+    if metar.find('raw_text') is not None:
+        rawText = metar.find('raw_text').text
+        lightning = False if rawText.find('LTG') == -1 else True
+    print(stationId + ":"
+    + flightCategory + ":"
+    + str(windDir) + "@" + str(windSpeed) + ("G" + str(windGustSpeed) if windGust else "") + ":"
+    + str(vis) + "SM:"
+    + obs + ":"
+    + str(tempC) + "/"
+    + str(dewpointC) + ":"
+    + str(altimHg) + ":"
+    + str(lightning))
+    conditionDict[stationId] = { "flightCategory" : flightCategory, "windDir": windDir, "windSpeed" : windSpeed, "windGustSpeed": windGustSpeed, "windGust": windGust, "vis": vis, "obs" : obs, "tempC" : tempC, "dewpointC" : dewpointC, "altimHg" : altimHg, "lightning": lightning, "skyConditions" : skyConditions, "obsTime": obsTime }
+    stationList.append(stationId)
 
-    # Retrieve METAR from aviationweather.gov data server
-    # Details about parameters can be found here: https://www.aviationweather.gov/dataserver/example?datatype=metar
-    url = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=5&mostRecentForEachStation=true&stationString=" + ",".join([item for item in airports if item != "NULL"])
-    print(url)
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 Edg/86.0.622.69'})
-    content = urllib.request.urlopen(req).read()
+# Setting LED colors based on weather conditions
+looplimit = int(round(BLINK_TOTALTIME_SECONDS / BLINK_SPEED)) if (ACTIVATE_WINDCONDITION_ANIMATION or ACTIVATE_LIGHTNING_ANIMATION) else 1
 
-    # Retrieve flying conditions from the service response and store in a dictionary for each airport
-    root = ET.fromstring(content)
-    conditionDict = { "NULL": {"flightCategory" : "", "windDir": "", "windSpeed" : 0, "windGustSpeed" :  0, "windGust" : False, "lightning": False, "tempC" : 0, "dewpointC" : 0, "vis" : 0, "altimHg" : 0, "obs" : "", "skyConditions" : {}, "obsTime" : datetime.datetime.now() } }
-    conditionDict.pop("NULL")
-    stationList = []
-    for metar in root.iter('METAR'):
-        stationId = metar.find('station_id').text
-        if metar.find('flight_category') is None:
-            print("Missing flight condition, skipping.")
-            continue
-        flightCategory = metar.find('flight_category').text
-        windDir = ""
-        windSpeed = 0
-        windGustSpeed = 0
-        windGust = False
-        lightning = False
-        tempC = 0
-        dewpointC = 0
-        vis = 0
-        altimHg = 0.0
-        obs = ""
-        skyConditions = []
-        if metar.find('wind_gust_kt') is not None:
-            windGustSpeed = int(metar.find('wind_gust_kt').text)
-            windGust = (True if (ALWAYS_BLINK_FOR_GUSTS or windGustSpeed > WIND_BLINK_THRESHOLD) else False)
-        if metar.find('wind_speed_kt') is not None:
-            windSpeed = int(metar.find('wind_speed_kt').text)
-        if metar.find('wind_dir_degrees') is not None:
-            windDir = metar.find('wind_dir_degrees').text
-        if metar.find('temp_c') is not None:
-            tempC = int(round(float(metar.find('temp_c').text)))
-        if metar.find('dewpoint_c') is not None:
-            dewpointC = int(round(float(metar.find('dewpoint_c').text)))
-        if metar.find('visibility_statute_mi') is not None:
-            vis = int(round(float(metar.find('visibility_statute_mi').text)))
-        if metar.find('altim_in_hg') is not None:
-            altimHg = float(round(float(metar.find('altim_in_hg').text), 2))
-        if metar.find('wx_string') is not None:
-            obs = metar.find('wx_string').text
-        if metar.find('observation_time') is not None:
-            obsTime = datetime.datetime.fromisoformat(metar.find('observation_time').text.replace("Z","+00:00"))
-        for skyIter in metar.iter("sky_condition"):
-            skyCond = { "cover" : skyIter.get("sky_cover"), "cloudBaseFt": int(skyIter.get("cloud_base_ft_agl", default=0)) }
-            skyConditions.append(skyCond)
-        if metar.find('raw_text') is not None:
-            rawText = metar.find('raw_text').text
-            lightning = False if rawText.find('LTG') == -1 else True
-        print(stationId + ":"
-        + flightCategory + ":"
-        + str(windDir) + "@" + str(windSpeed) + ("G" + str(windGustSpeed) if windGust else "") + ":"
-        + str(vis) + "SM:"
-        + obs + ":"
-        + str(tempC) + "/"
-        + str(dewpointC) + ":"
-        + str(altimHg) + ":"
-        + str(lightning))
-        conditionDict[stationId] = { "flightCategory" : flightCategory, "windDir": windDir, "windSpeed" : windSpeed, "windGustSpeed": windGustSpeed, "windGust": windGust, "vis": vis, "obs" : obs, "tempC" : tempC, "dewpointC" : dewpointC, "altimHg" : altimHg, "lightning": lightning, "skyConditions" : skyConditions, "obsTime": obsTime }
-        stationList.append(stationId)
-
-    # Setting LED colors based on weather conditions
-    looplimit = int(round(BLINK_TOTALTIME_SECONDS / BLINK_SPEED)) if (ACTIVATE_WINDCONDITION_ANIMATION or ACTIVATE_LIGHTNING_ANIMATION) else 1
-
-    windCycle = False
-    numAirports = len(stationList)
-    while looplimit > 0:
-        i = 0
-        for airportcode in airports:
-            # Skip NULL entries
-            if airportcode == "NULL":
-                i += 1
-                continue
-
-            color = COLOR_CLEAR
-            conditions = conditionDict.get(airportcode, None)
-            windy = False
-            lightningConditions = False
-
-            if conditions != None:
-                windy = True if (ACTIVATE_WINDCONDITION_ANIMATION and windCycle == True and (conditions["windSpeed"] > WIND_BLINK_THRESHOLD or conditions["windGust"] == True)) else False
-                lightningConditions = True if (ACTIVATE_LIGHTNING_ANIMATION and windCycle == False and conditions["lightning"] == True) else False
-                if conditions["flightCategory"] == "VFR":
-                    color = COLOR_VFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_VFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
-                elif conditions["flightCategory"] == "MVFR":
-                    color = COLOR_MVFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_MVFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
-                elif conditions["flightCategory"] == "IFR":
-                    color = COLOR_IFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_IFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
-                elif conditions["flightCategory"] == "LIFR":
-                    color = COLOR_LIFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_LIFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
-                else:
-                    color = COLOR_CLEAR
-
-            print("Setting LED " + str(i) + " for " + airportcode + " to " + ("lightning " if lightningConditions else "") + ("windy " if windy else "") + (conditions["flightCategory"] if conditions != None else "None") + " " + str(color))
-            pixels[i] = color
+windCycle = False
+numAirports = len(stationList)
+while looplimit > 0:
+    i = 0
+    for airportcode in airports:
+        # Skip NULL entries
+        if airportcode == "NULL":
             i += 1
+            continue
 
-        # Update actual LEDs all at once
-#         loopy = 0
-#         while loopy < 100:
-        clear(pixels)
-#             pixels_suppressed = suppress_some_leds(pixels)
-        print("main pixels " + str(pixels))
-#             print("pixels after suppression " + str(pixels_suppressed))
-#             pixels_suppressed.show()
-        pixels.show()
-        time.sleep(60)
-#             loopy += 1
+        color = COLOR_CLEAR
+        conditions = conditionDict.get(airportcode, None)
+        windy = False
+        lightningConditions = False
 
-        clear(pixels)
-        # Switching between animation cycles
-        time.sleep(BLINK_SPEED)
-        windCycle = False if windCycle else True
-        looplimit -= 1
+        if conditions != None:
+            windy = True if (ACTIVATE_WINDCONDITION_ANIMATION and windCycle == True and (conditions["windSpeed"] > WIND_BLINK_THRESHOLD or conditions["windGust"] == True)) else False
+            lightningConditions = True if (ACTIVATE_LIGHTNING_ANIMATION and windCycle == False and conditions["lightning"] == True) else False
+            if conditions["flightCategory"] == "VFR":
+                color = COLOR_VFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_VFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
+            elif conditions["flightCategory"] == "MVFR":
+                color = COLOR_MVFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_MVFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
+            elif conditions["flightCategory"] == "IFR":
+                color = COLOR_IFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_IFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
+            elif conditions["flightCategory"] == "LIFR":
+                color = COLOR_LIFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_LIFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
+            else:
+                color = COLOR_CLEAR
 
-    print()
-    print("Done")
+        print("Setting LED " + str(i) + " for " + airportcode + " to " + ("lightning " if lightningConditions else "") + ("windy " if windy else "") + (conditions["flightCategory"] if conditions != None else "None") + " " + str(color))
+        pixels[i] = color
+        i += 1
+
+    # Update actual LEDs all at once
+    clear(pixels)
+    print("main pixels " + str(pixels))
+    pixels.show()
+    # Switching between animation cycles
+    time.sleep(BLINK_SPEED)
+    windCycle = False if windCycle else True
+    looplimit -= 1
+
+print()
+print("Done")
