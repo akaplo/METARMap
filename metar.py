@@ -78,6 +78,10 @@ def clear(pixels):
         pixels_copy[i] = (0,0,0)
     pixels_copy.show()
 
+def fade_to_value(pixels, fade_time):
+    
+
+
 def run():
     # Initialize the LED strip
     print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
@@ -198,15 +202,16 @@ def run():
             i += 1
 
         # Update actual LEDs all at once
-        loopy = 0
-        while loopy < 100:
-            clear(pixels)
-            pixels_suppressed = suppress_some_leds(pixels)
-            print("main pixels " + str(pixels))
-            print("pixels after suppression " + str(pixels_suppressed))
-            pixels_suppressed.show()
-            time.sleep(1)
-            loopy += 1
+#         loopy = 0
+#         while loopy < 100:
+        clear(pixels)
+#             pixels_suppressed = suppress_some_leds(pixels)
+        print("main pixels " + str(pixels))
+#             print("pixels after suppression " + str(pixels_suppressed))
+#             pixels_suppressed.show()
+        pixels.show()
+        time.sleep(60)
+#             loopy += 1
 
         clear(pixels)
         # Switching between animation cycles
