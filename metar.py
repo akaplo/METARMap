@@ -7,6 +7,7 @@ import datetime
 import os
 import random
 import copy
+from colour import Color
 
 # metar.py script iteration 1.4.1
 
@@ -77,6 +78,31 @@ def clear(pixels):
     for i in range(50):
         pixels_copy[i] = (0,0,0)
     pixels_copy.show()
+
+def map_temps_to_colors():
+    colors = {
+        -10: Color('#9900cc'),
+        20: Color('#0000ff'),
+        40: Color('#00ffd0'),
+        50: Color('#FFfa00'),
+        60: Color('#17ff00'),
+        70: Color('#FF8c00'),
+        80: Color('#FF3200'),
+        90: Color('#FF0090'),
+        100: Color('#FF0EF0')
+    }
+    mappings = {}
+    temp_ranges = [(-10, 20), (20, 40), (40, 50), (50, 60), (60, 70), (70, 80), (80, 90), (90, 100)]
+    for temps in temp_ranges:
+        first_color = colors[temps[0]]
+        second_color = colors[temps[1]]
+        num_steps = temps[1] - temps[0]
+        # list of colors equal to length of temp range
+        colors_in_range = list(first_color.range_to(second_color, num_steps))
+        # loop over temp range and assign mapping of temp to color
+        for idx, temp in enumerate(range(temps[0], temps[1])):
+            mappings[temp] = colors_in_range[idx]
+    return mappings
 
 # Initialize the LED strip
 print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
@@ -165,6 +191,8 @@ looplimit = int(round(BLINK_TOTALTIME_SECONDS / BLINK_SPEED)) if (ACTIVATE_WINDC
 
 windCycle = False
 numAirports = len(stationList)
+show_prevailing_conditions = False #datetime.datetime.now().minute === 0
+show_temperature = True #datetime.datetime.now().minute === 5
 while looplimit > 0:
     i = 0
     for airportcode in airports:
@@ -178,7 +206,7 @@ while looplimit > 0:
         windy = False
         lightningConditions = False
 
-        if conditions != None:
+        if conditions != None and show_prevailing_conditions:
             windy = True if (ACTIVATE_WINDCONDITION_ANIMATION and windCycle == True and (conditions["windSpeed"] > WIND_BLINK_THRESHOLD or conditions["windGust"] == True)) else False
             lightningConditions = True if (ACTIVATE_LIGHTNING_ANIMATION and windCycle == False and conditions["lightning"] == True) else False
             if conditions["flightCategory"] == "VFR":
@@ -191,7 +219,10 @@ while looplimit > 0:
                 color = COLOR_LIFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_LIFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
             else:
                 color = COLOR_CLEAR
-
+        elif show_temperature:
+            temp_to_color_map = map_temps_to_colors()
+            temp_f = int(round(conditions["tempC"] * 1.8 + 32))
+            color = temp_to_color_map[]
         print("Setting LED " + str(i) + " for " + airportcode + " to " + ("lightning " if lightningConditions else "") + ("windy " if windy else "") + (conditions["flightCategory"] if conditions != None else "None") + " " + str(color))
         pixels[i] = color
         i += 1
