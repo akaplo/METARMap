@@ -190,8 +190,9 @@ looplimit = int(round(BLINK_TOTALTIME_SECONDS / BLINK_SPEED)) if (ACTIVATE_WINDC
 
 windCycle = False
 numAirports = len(stationList)
-show_prevailing_conditions = False #datetime.datetime.now().minute === 0
-show_temperature = True #datetime.datetime.now().minute === 5
+min_of_window = datetime.datetime.now().minute % 10
+show_prevailing_conditions = 0 <= min_of_window < 5
+show_temperature = 5 <= min_of_window
 while looplimit > 0:
     i = 0
     for airportcode in airports:
