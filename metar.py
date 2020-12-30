@@ -219,7 +219,7 @@ while looplimit > 0:
                 color = COLOR_LIFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_LIFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
             else:
                 color = COLOR_CLEAR
-        elif show_temperature and conditions["tempC"]:
+        elif conditions != None and show_temperature and "tempC" in conditions:
             temp_to_color_map = map_temps_to_colors()
             print(conditions["tempC"])
             temp_f = int(round(conditions["tempC"] * 1.8 + 32))
