@@ -226,6 +226,7 @@ while looplimit > 0:
             # to multiply each value in rgb tuple by 255, we have to turn it into a list
             color = [temp_to_color_map[temp_f].rgb]
             color = [tuple(int(round(y * 255)) for y in x ) for x in color][0]
+            print(color)
         print("Setting LED " + str(i) + " for " + airportcode + " to " + ("lightning " if lightningConditions else "") + ("windy " if windy else "") + (conditions["flightCategory"] if conditions != None else "None") + " " + str(color))
         pixels[i] = color
         i += 1
