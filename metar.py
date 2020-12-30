@@ -219,14 +219,18 @@ while looplimit > 0:
                 color = COLOR_LIFR if not (windy or lightningConditions) else COLOR_LIGHTNING if lightningConditions else (COLOR_LIFR_FADE if FADE_INSTEAD_OF_BLINK else COLOR_CLEAR) if windy else COLOR_CLEAR
             else:
                 color = COLOR_CLEAR
-        elif show_temperature:
+        elif show_temperature and conditions["tempC"]:
             temp_to_color_map = map_temps_to_colors()
+            print(conditions["tempC"])
             temp_f = int(round(conditions["tempC"] * 1.8 + 32))
+            print(temp_f)
             # colour library returns rgb 0 -> 1, we need 0 -> 255.
             # to multiply each value in rgb tuple by 255, we have to turn it into a list
             color = [temp_to_color_map[temp_f].rgb]
             color = [tuple(int(round(y * 255)) for y in x ) for x in color][0]
             print(color)
+        else:
+            color = COLOR_CLEAR
         print("Setting LED " + str(i) + " for " + airportcode + " to " + ("lightning " if lightningConditions else "") + ("windy " if windy else "") + (conditions["flightCategory"] if conditions != None else "None") + " " + str(color))
         pixels[i] = color
         i += 1
