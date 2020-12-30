@@ -20,14 +20,14 @@ LED_COUNT		= 50			# Number of LED pixels.
 LED_PIN			= board.D18		# GPIO pin connected to the pixels (18 is PCM).
 LED_BRIGHTNESS		= 0.5			# Float from 0.0 (min) to 1.0 (max)
 
-COLOR_VFR		= (255,0,0)		# Green
-COLOR_VFR_FADE		= (125,0,0)		# Green Fade for wind
+COLOR_VFR		= (0,255,0)		# Green
+COLOR_VFR_FADE		= (0,125,0)		# Green Fade for wind
 COLOR_MVFR		= (0,0,255)		# Blue
 COLOR_MVFR_FADE		= (0,0,125)		# Blue Fade for wind
-COLOR_IFR		= (0,255,0)		# Red
-COLOR_IFR_FADE		= (0,125,0)		# Red Fade for wind
-COLOR_LIFR		= (0,125,125)		# Magenta
-COLOR_LIFR_FADE		= (0,75,75)		# Magenta Fade for wind
+COLOR_IFR		= (255,0,0)		# Red
+COLOR_IFR_FADE		= (125,0,0)		# Red Fade for wind
+COLOR_LIFR		= (125,0,125)		# Magenta
+COLOR_LIFR_FADE		= (75,0,75)		# Magenta Fade for wind
 COLOR_CLEAR		= (0,0,0)		# Clear
 COLOR_LIGHTNING		= (255,255,255)		# White
 
