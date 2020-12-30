@@ -222,7 +222,7 @@ while looplimit > 0:
         elif show_temperature:
             temp_to_color_map = map_temps_to_colors()
             temp_f = int(round(conditions["tempC"] * 1.8 + 32))
-            color = temp_to_color_map[]
+            color = temp_to_color_map[temp_f]
         print("Setting LED " + str(i) + " for " + airportcode + " to " + ("lightning " if lightningConditions else "") + ("windy " if windy else "") + (conditions["flightCategory"] if conditions != None else "None") + " " + str(color))
         pixels[i] = color
         i += 1
