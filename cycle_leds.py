@@ -5,8 +5,8 @@ import os
 LED_COUNT		= 50			# Number of LED pixels.
 LED_PIN			= board.D18		# GPIO pin connected to the pixels (18 is PCM).
 LED_ORDER		= neopixel.RGB		# Strip type and colour ordering
-
-pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT)
+LED_BRIGHTNESS = 0.5
+pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS)
 
 color_red = (255,0,0)
 color_clear = (0,0,0)

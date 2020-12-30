@@ -19,7 +19,6 @@ from colour import Color
 LED_COUNT		= 50			# Number of LED pixels.
 LED_PIN			= board.D18		# GPIO pin connected to the pixels (18 is PCM).
 LED_BRIGHTNESS		= 0.5			# Float from 0.0 (min) to 1.0 (max)
-LED_ORDER		= neopixel.RGB		# Strip type and colour ordering
 
 COLOR_VFR		= (255,0,0)		# Green
 COLOR_VFR_FADE		= (125,0,0)		# Green Fade for wind
@@ -113,7 +112,7 @@ bright = False #BRIGHT_TIME_START < datetime.datetime.now().time() < DIM_TIME_ST
 print("Wind animation:" + str(ACTIVATE_WINDCONDITION_ANIMATION))
 print("Lightning animation:" + str(ACTIVATE_LIGHTNING_ANIMATION))
 print("Daytime Dimming:" + str(ACTIVATE_DAYTIME_DIMMING) + (" using Sunrise/Sunset" if USE_SUNRISE_SUNSET and ACTIVATE_DAYTIME_DIMMING else ""))
-pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if bright == False else LED_BRIGHTNESS, pixel_order = LED_ORDER, auto_write = False)
+pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness = LED_BRIGHTNESS_DIM if bright == False else LED_BRIGHTNESS, auto_write = False)
 
 # Read the airports file to retrieve list of airports and use as order for LEDs
 with open(airports_abs_path) as f:
