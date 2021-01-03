@@ -9,12 +9,12 @@ import os
 import random
 import copy
 from colour import Color
-from enum import Enum
 
 
-class MapModes(Enum):
-    TEMPERATURE = 'temp'
-    CONDITIONS = 'conditions'
+map_modes = {
+    'temperature': 'temp',
+    'conditions': 'conditions'
+}
 
 # metar.py script iteration 1.4.1
 
@@ -117,7 +117,7 @@ def map_temps_to_colors():
 def main(mode):
     if not os.geteuid() == 0:
         sys.exit("\nOnly root can run this script\n")
-    if mode is not None and mode not in MapModes:
+    if mode is not None and mode not in map_modes.values():
         sys.exit("\nInvalid mode supplied\n")
     # Initialize the LED strip
     print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
@@ -218,8 +218,8 @@ def main(mode):
 
     windCycle = False
     min_of_window = datetime.datetime.now().minute % 10
-    show_prevailing_conditions = mode == MapModes.CONDITIONS or (mode is None and 0 <= min_of_window < 5)
-    show_temperature = mode == MapModes.TEMPERATURE or (mode is None and 5 <= min_of_window)
+    show_prevailing_conditions = mode == map_modes['conditions'] or (mode is None and 0 <= min_of_window < 5)
+    show_temperature = mode == map_modes['temperature'] or (mode is None and 5 <= min_of_window)
     while looplimit > 0:
         i = 0
         for airportcode in airports:
