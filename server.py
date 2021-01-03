@@ -22,14 +22,22 @@ def turn_on():
     if mode not in allowed_modes:
         return 'Invalid mode: expected one of ' + str(allowed_modes) + ' but got ' + mode
     os.system('sudo python3 metar.py ' + mode)
+    statefile = open('ledsOn', 'w')
+    statefile.close()
     return 'Turned on map with mode ' + mode
 
 
 @server.route('/off', methods=['GET'])
 def turn_off():
-    return 'Turned off map'
+    os.system('sudo python3 turn_off.py')
+    if os.path.exists('ledsOn'):
+        os.remove('ledsOn')
+        return 'Turned off map'
+    else:
+        return 'Map was not on (or, at least, indicator file did not exist)'
 
 
 @server.route('/status')
 def status():
-    return 'Not yet implemented'
+    statefile_exists = os.path.exists('ledsOn')
+    return 'The map is ' + 'ON' if statefile_exists else 'OFF (or, at least, indicator file does not exist)'
