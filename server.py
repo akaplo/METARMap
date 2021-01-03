@@ -1,5 +1,5 @@
 from flask import Flask, request
-import metar
+import os
 
 server = Flask(__name__)
 
@@ -21,7 +21,7 @@ def turn_on():
     mode = body['mode']
     if mode not in allowed_modes:
         return 'Invalid mode: expected one of ' + str(allowed_modes) + ' but got ' + mode
-    metar.main(mode)
+    os.system('sudo python3 metar.py ' + mode)
     return 'Turned on map with mode ' + mode
 
 

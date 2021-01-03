@@ -280,4 +280,8 @@ def main(mode):
 
 
 if __name__ == '__main__':
-    main(None)
+    try:
+        mode = sys.argv[1]
+        main(mode)
+    except TypeError:
+        main(None)
