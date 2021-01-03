@@ -1,5 +1,6 @@
 from flask import Flask, request
 import os
+from metar import MapModes
 
 server = Flask(__name__)
 
@@ -15,12 +16,10 @@ def index():
 # }
 @server.route('/on', methods=['POST'])
 def turn_on():
-    allowed_modes = ['temp', 'conditions']
     body = request.get_json()
-    print(body)
     mode = body['mode']
-    if mode not in allowed_modes:
-        return 'Invalid mode: expected one of ' + str(allowed_modes) + ' but got ' + mode
+    if mode not in MapModes:
+        return 'Invalid mode: expected one of ' + str(MapModes) + ' but got ' + mode
     os.system('sudo python3 metar.py ' + mode)
     map_is_on = os.path.exists('mapIsOn')
     if map_is_on:
@@ -45,4 +44,12 @@ def turn_off():
 @server.route('/status')
 def status():
     statefile_exists = os.path.exists('mapIsOn')
-    return 'The map is ' + 'ON' if statefile_exists else 'OFF'
+    state = None
+    if statefile_exists:
+        file = open('mapIsOn', 'r')
+        state = file.readline()
+        file.close()
+    return {
+        'map_is_on': statefile_exists,
+        'mode': state if state is not None else None
+    }
