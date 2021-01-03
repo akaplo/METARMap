@@ -16,5 +16,5 @@ pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT)
 for idxi in range(50):
     color = (0,0,0)
     pixels[idxi] = color
-
-
+if os.path.exists('mapIsOn'):
+    os.remove('mapIsOn')

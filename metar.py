@@ -276,6 +276,8 @@ def main(mode):
         looplimit -= 1
 
     print()
+    statefile = open('mapIsOn', 'w')
+    statefile.close()
     print("Done")
 
 
