@@ -1,7 +1,7 @@
 import urllib.request
 import xml.etree.ElementTree as ET
 import board
-from sys import argv
+import sys
 import neopixel
 import time
 import datetime
@@ -109,6 +109,8 @@ def map_temps_to_colors():
 
 
 def main(mode):
+    if not os.geteuid() == 0:
+        sys.exit("\nOnly root can run this script\n")
     # Initialize the LED strip
     print("Running metar.py at " + datetime.datetime.now().strftime('%d/%m/%Y %H:%M'))
     script_dir = os.path.dirname(__file__)
@@ -278,4 +280,4 @@ def main(mode):
 
 
 if __name__ == '__main__':
-    main(argv[1])
+    main(None)
