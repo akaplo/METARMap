@@ -285,7 +285,8 @@ def main(mode):
 
     print()
     statefile = open('mapIsOn', 'w')
-    statefile.write(mode)
+    state_to_write = mode if mode is not None else map_modes['conditions'] if show_prevailing_conditions else map_modes['temperature']
+    statefile.write(state_to_write)
     statefile.close()
     print("Done")
 
