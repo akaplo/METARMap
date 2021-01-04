@@ -1,9 +1,9 @@
 <!doctype html>
 <title>MeteroLEDgy</title>
 <body>
-    {% if True %}
+    {% if map_is_on is true %}
         <h1>Map is on!</h1>
-        {% if mode is not None %}
+        {% if mode is not none %}
             <h2>Mode is {{ mode }}</h2>
         {% endif %}
     {% else %}
