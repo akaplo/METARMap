@@ -1,0 +1,12 @@
+<!doctype html>
+<title>MeteroLEDgy</title>
+<body>
+    {% if True %}
+        <h1>Map is on!</h1>
+        {% if mode is not None %}
+            <h2>Mode is {{ mode }}</h2>
+        {% endif %}
+    {% else %}
+        <h1>Map is off :(</h1>
+    {% endif %}
+</body>

@@ -12,7 +12,7 @@ def index():
     if map_is_on:
         statefile = open('mapIsOn')
         mode = statefile.readline()
-    return render_template('index.html', on=map_is_on, mode=mode)
+    return render_template('index.html', map_is_on=map_is_on, mode=mode)
 
 
 # Body:
