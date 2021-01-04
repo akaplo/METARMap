@@ -291,8 +291,8 @@ def main(mode):
 
 
 if __name__ == '__main__':
-    try:
+    if len(sys.argv) > 0:
         mode = sys.argv[1]
         main(mode)
-    except TypeError:
+    else:
         main(None)
