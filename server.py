@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import os
 from metar import map_modes
 
@@ -7,7 +7,12 @@ server = Flask(__name__)
 
 @server.route('/', methods=['GET'])
 def index():
-    return 'MeteroLEDgy'
+    map_is_on = os.path.exists('mapIsOn')
+    mode = None
+    if map_is_on:
+        statefile = open('mapIsOn')
+        mode = statefile.readline()
+    return render_template('index.html', on=map_is_on, mode=mode)
 
 
 # Body:
